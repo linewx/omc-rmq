@@ -6,7 +6,7 @@ import json
 
 from omc.core.decorator import filecache
 from omc.utils import UrlUtils
-from omc.utils.rabbitmq import Management
+from omc_rmq.lib.rabbitmq import Management
 from omc.config import settings
 
 

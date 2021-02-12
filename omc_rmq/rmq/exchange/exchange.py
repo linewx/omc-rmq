@@ -3,12 +3,12 @@ import json
 import sys
 import time
 
-from omc.common.formater import format_list
+from omc_rmq.lib.formater import format_list
 from omc.core import Resource
 import argparse
 
 from omc.core.decorator import filecache
-from omc.utils.rmq_utils import build_admin_params
+from omc_rmq.utils import build_admin_params
 
 
 class Exchange(Resource):
