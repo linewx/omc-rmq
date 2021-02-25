@@ -26,6 +26,8 @@ import socket
 import ssl
 import traceback
 
+from omc.core import console
+
 try:
     from signal import signal, SIGPIPE, SIG_DFL
 
@@ -36,8 +38,8 @@ except ImportError:
 import sys
 
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+def print(*args, **kwargs):
+    console.log(*args, file=sys.stderr, **kwargs)
 
 
 from configparser import ConfigParser, NoSectionError
@@ -467,20 +469,20 @@ def make_configuration():
                 setattr(options, key, getattr(u, key))
 
         if u.path is not None and (u.path != "") and (u.path != "/"):
-            eprint("WARNING: path in --base-uri is ignored. Please specify --vhost and/or --path-prefix separately.\n")
+            console.log("WARNING: path in --base-uri is ignored. Please specify --vhost and/or --path-prefix separately.\n")
 
     return (options, args)
 
 
 def assert_usage(expr, error):
     if not expr:
-        eprint("\nERROR: {0}\n".format(error))
-        eprint("{0} --help for help\n".format(os.path.basename(sys.argv[0])))
+        console.log("\nERROR: {0}\n".format(error))
+        console.log("{0} --help for help\n".format(os.path.basename(sys.argv[0])))
         sys.exit(1)
 
 
 def print_version():
-    print("rabbitmqadmin {0}".format(VERSION))
+    console.log("rabbitmqadmin {0}".format(VERSION))
     sys.exit(0)
 
 
@@ -506,7 +508,7 @@ def main():
 
 
 def die(s):
-    eprint("*** {0}\n".format(s))
+    console.log("*** {0}\n".format(s))
     sys.exit(1)
 
 
@@ -573,7 +575,7 @@ class Management:
         # Python < 2.7.8, note: those versions still have SSLv3 enabled
         #                       and other limitations. See rabbitmq/rabbitmq-management#225
         else:
-            eprint("WARNING: rabbitmqadmin requires Python 2.7.9+ when HTTPS is used.")
+            console.log("WARNING: rabbitmqadmin requires Python 2.7.9+ when HTTPS is used.")
             return httplib.HTTPSConnection(hostname, port,
                                            cert_file=self.options.ssl_cert_file,
                                            key_file=self.options.ssl_key_file)
@@ -641,7 +643,7 @@ class Management:
 
     def verbose(self, string):
         if self.options.verbose:
-            print(string)
+            console.log(string)
 
     def get_arg(self):
         assert_usage(len(self.args) == 1, 'Exactly one argument required')
@@ -665,7 +667,7 @@ class Management:
                 assert_usage(False, """help topic must be one of:
   subcommands
   config""")
-            print(usage)
+            console.log(usage)
         sys.exit(0)
 
     def invoke_publish(self, args=None):
@@ -852,7 +854,7 @@ class Management:
         try:
             return json.loads(text)
         except ValueError:
-            eprint("ERROR: Could not parse JSON:\n  {0}".format(text))
+            console.log("ERROR: Could not parse JSON:\n  {0}".format(text))
             sys.exit(1)
 
 
@@ -860,11 +862,11 @@ def format_list(json_list, columns, args, options):
     format = options.format
     formatter = None
     if format == "raw_json":
-        print(json_list)
+        console.log(json_list)
         return
     elif format == "pretty_json":
         enc = json.JSONEncoder(False, False, True, True, True, 2)
-        print(enc.encode(json.loads(json_list)))
+        console.log(enc.encode(json.loads(json_list)))
         return
     else:
         formatter = FORMATS[format]
@@ -877,7 +879,7 @@ def format_list(json_list, columns, args, options):
 class Lister:
     def verbose(self, string):
         if self.options.verbose:
-            print(string)
+            console.log(string)
 
     def display(self, json_list):
         depth = sys.maxsize
@@ -958,7 +960,7 @@ class TSVList(Lister):
 
         for row in table:
             line = "\t".join(row)
-            print(line)
+            console.log(line)
 
 
 class LongList(Lister):
@@ -973,11 +975,11 @@ class LongList(Lister):
         for col in columns:
             max_width = max(max_width, len(col))
         fmt = "{0:>" + str(max_width) + "}: {1}"
-        print(sep)
+        console.log(sep)
         for i in range(0, len(table)):
             for j in range(0, len(columns)):
-                print(fmt.format(columns[j], table[i][j]))
-            print(sep)
+                console.log(fmt.format(columns[j], table[i][j]))
+            console.log(sep)
 
 
 class TableList(Lister):
@@ -1008,13 +1010,13 @@ class TableList(Lister):
         for i in range(0, len(col_widths)):
             fmt = " {0:" + align + str(col_widths[i]) + "} "
             txt += fmt.format(row[i]) + "|"
-        print(txt)
+        console.log(txt)
 
     def ascii_bar(self, col_widths):
         txt = "+"
         for w in col_widths:
             txt += ("-" * (w + 2)) + "+"
-        print(txt)
+        console.log(txt)
 
 
 class KeyValueList(Lister):
@@ -1028,7 +1030,7 @@ class KeyValueList(Lister):
             row = []
             for j in range(0, len(columns)):
                 row.append("{0}=\"{1}\"".format(columns[j], table[i][j]))
-            print(" ".join(row))
+            console.log(" ".join(row))
 
 
 # TODO handle spaces etc in completable names
@@ -1047,7 +1049,7 @@ class BashList(Lister):
             res = []
             for row in table:
                 res.append(row[ix])
-            print(" ".join(res))
+            console.log(" ".join(res))
 
 
 FORMATS = {
@@ -1183,7 +1185,7 @@ _rabbitmqadmin()
 }
 complete -F _rabbitmqadmin rabbitmqadmin
 """
-    print(script)
+    console.log(script)
 
 
 if __name__ == "__main__":

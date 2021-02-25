@@ -1,6 +1,8 @@
 import json
 import sys
 
+from omc.core import console
+
 
 def maybe_utf8(s):
     if isinstance(s, int):
@@ -20,7 +22,7 @@ def maybe_utf8(s):
 class Lister:
     def verbose(self, string):
         if self.options.verbose:
-            print(string)
+            console.log(string)
 
     def display(self, json_list):
         depth = sys.maxsize
@@ -102,7 +104,7 @@ class TSVList(Lister):
 
         for row in table:
             line = "\t".join(row)
-            print(line)
+            console.log(line)
 
 
 class LongList(Lister):
@@ -117,11 +119,11 @@ class LongList(Lister):
         for col in columns:
             max_width = max(max_width, len(col))
         fmt = "{0:>" + str(max_width) + "}: {1}"
-        print(sep)
+        console.log(sep)
         for i in range(0, len(table)):
             for j in range(0, len(columns)):
-                print(fmt.format(columns[j], table[i][j]))
-            print(sep)
+                console.log(fmt.format(columns[j], table[i][j]))
+            console.log(sep)
 
 
 class TableList(Lister):
@@ -150,13 +152,13 @@ class TableList(Lister):
         for i in range(0, len(col_widths)):
             fmt = " {0:" + align + str(col_widths[i]) + "} "
             txt += fmt.format(row[i]) + "|"
-        print(txt)
+        console.log(txt)
 
     def ascii_bar(self, col_widths):
         txt = "+"
         for w in col_widths:
             txt += ("-" * (w + 2)) + "+"
-        print(txt)
+        console.log(txt)
 
 
 class KeyValueList(Lister):
@@ -170,7 +172,7 @@ class KeyValueList(Lister):
             row = []
             for j in range(0, len(columns)):
                 row.append("{0}=\"{1}\"".format(columns[j], table[i][j]))
-            print(" ".join(row))
+            console.log(" ".join(row))
 
 
 # TODO handle spaces etc in completable names
@@ -189,7 +191,7 @@ class BashList(Lister):
             res = []
             for row in table:
                 res.append(row[ix])
-            print(" ".join(res))
+            console.log(" ".join(res))
 
 
 FORMATS = {
@@ -208,12 +210,12 @@ FORMATS = {
 def format_list(json_list, columns=[], format='pretty_json'):
     formatter = None
     if format == "raw_json":
-        print(json_list)
+        console.log(json_list)
         return
     elif format == "pretty_json":
         # enc = json.JSONEncoder(False, False, True, True, True, indent=2)
         enc = json.JSONEncoder(indent=2)
-        print(enc.encode(json.loads(json_list)))
+        console.log(enc.encode(json.loads(json_list)))
         return
     else:
         formatter = FORMATS[format]

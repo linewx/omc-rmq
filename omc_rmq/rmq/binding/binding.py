@@ -4,7 +4,7 @@ from omc_rmq.utils import build_admin_params
 
 from omc.common import CompletionMixin
 from omc_rmq.lib.formater import format_list
-from omc.core import Resource
+from omc.core import Resource, console
 import argparse
 
 
@@ -87,14 +87,14 @@ class Binding(Resource, CompletionMixin):
             results.append(one_binding)
 
         if len(results) == 0:
-            print('no items found')
+            console.log('no items found')
 
         if len(results) > 1 and not args.force:
 
-            print('more than 1 item found:')
-            print(results)
-            print('please narrow the filter conditions.')
-            print('or you can use --force to force to delete all the records')
+            console.log('more than 1 item found:')
+            console.log(results)
+            console.log('please narrow the filter conditions.')
+            console.log('or you can use --force to force to delete all the records')
         else:
             for one in results:
                 delete_args = build_admin_params({

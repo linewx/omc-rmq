@@ -8,7 +8,7 @@ from omc_rmq.utils import build_admin_params
 
 from omc.common import CompletionMixin
 from omc_rmq.lib.formater import format_list
-from omc.core import Resource
+from omc.core import Resource, console
 
 
 class Queue(Resource, CompletionMixin):
@@ -107,7 +107,7 @@ class Queue(Resource, CompletionMixin):
         client = self.context['common']['client']
 
         try:
-            print('star listening message on queue %s, press Ctrl-C to stop' % queue_name)
+            console.log('star listening message on queue %s, press Ctrl-C to stop' % queue_name)
             while True:
                 # fetch message periodically(no amqp support) with ui
                 # ['queue=' + queue_name, 'count=' + args.count])
@@ -120,5 +120,5 @@ class Queue(Resource, CompletionMixin):
                     format_list(messages)
                 time.sleep(args.period)
         except KeyboardInterrupt:
-            print('stop listening')
+            console.log('stop listening')
             sys.exit(0)

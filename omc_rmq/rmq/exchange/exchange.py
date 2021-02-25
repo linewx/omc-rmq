@@ -4,7 +4,7 @@ import sys
 import time
 
 from omc_rmq.lib.formater import format_list
-from omc.core import Resource
+from omc.core import Resource, console
 import argparse
 
 from omc.core.decorator import filecache
@@ -119,11 +119,11 @@ class Exchange(Resource):
         except KeyboardInterrupt:
             # delete temp queue and routing key after listen exist
             # purge message
-            print('purging message on queue %s' % queue_name)
+            console.log('purging message on queue %s' % queue_name)
             client.invoke_purge('queue', ['name=' + queue_name])
 
             # delete bindings
-            print('deleting binding with source %s and destination %s' % (exchange_name, queue_name))
+            console.log('deleting binding with source %s and destination %s' % (exchange_name, queue_name))
             client.invoke_delete('binding', build_admin_params({
                 'source': exchange_name,
                 'destination': queue_name,
@@ -132,6 +132,6 @@ class Exchange(Resource):
             }))
 
             # delete queue
-            print('deleting queue %s' % queue_name)
+            console.log('deleting queue %s' % queue_name)
             client.invoke_delete('queue', ['name=' + queue_name])
             sys.exit(0)
