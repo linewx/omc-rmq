@@ -1,5 +1,6 @@
 import os
 
+from omc.common.common_completion import CompletionContent
 from omc.core import Resource
 import argparse
 import json
@@ -25,21 +26,18 @@ class Rmq(Resource):
             'client': Management(self._build_configuration())
         }
 
-    @filecache(duration=60 * 60 * 24, file=Resource._get_cache_file_name)
-    def _completion(self, short_mode=True):
+    def _resource_completion(self, short_mode=True):
         results = []
-        results.append(super()._completion(False))
 
-        if not self._have_resource_value():
             # list rabbitmq connection instance from config file
-            config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower() + '.json')
-            if (os.path.exists(config_file_name)):
-                with open(config_file_name) as f:
-                    instances = json.load(f)
-                    results.extend(
-                        self._get_completion([(key, 'instance=' + key) for key, value in instances.items()], False))
+        config_file_name = os.path.join(settings.RESOURCE_CONFIG_DIR, self.__class__.__name__.lower() + '.json')
+        if (os.path.exists(config_file_name)):
+            with open(config_file_name) as f:
+                instances = json.load(f)
+                results.extend(
+                    self._get_completion([(key, 'instance=' + key) for key, value in instances.items()], False))
 
-        return "\n".join(results)
+        return CompletionContent(results)
 
     def _build_configuration(self):
         args = self.parser.parse_args(self._get_resource_values())

@@ -3,6 +3,8 @@ import json
 import sys
 import time
 
+from omc.common.common_completion import CompletionContent
+from omc.common.formatter import Formatter
 from omc_rmq.lib.formater import format_list
 from omc.core import Resource, console
 import argparse
@@ -12,19 +14,12 @@ from omc_rmq.utils import build_admin_params
 
 
 class Exchange(Resource):
-    @filecache(duration=60 * 5, file=Resource._get_cache_file_name)
-    def _completion(self, short_mode=False):
-        results = []
-        results.append(super()._completion(True))
-        if not self._get_resource_values():
-            # resource haven't filled yet
-            client = self.context['common']['client']
-            exchanges = json.loads(client.invoke_list('exchanges'))
-            results = [(one['name'], "name is %(name)s, type is %(type)s | vhost is %(vhost)s" % one) for one in
-                       exchanges]
-            results.extend(self._get_completion(results, short_mode=True))
 
-        return '\n'.join(results)
+    def _resource_completion(self, short_mode=False):
+        client = self.context['common']['client']
+        exchanges = json.loads(client.invoke_list('exchanges'))
+        results = [(one['name'], one['name'], one['type'], one['vhost']) for one in exchanges]
+        return CompletionContent(Formatter.format_completions(results))
 
     def list(self):
         client = self.context['common']['client']
@@ -74,7 +69,8 @@ class Exchange(Resource):
             params = self._get_params()[:-1]
             the_completion = ['--queue', '--key', '--ackmode', '--count', '--period']
             if params and params[-1].strip() == '--ackmode':
-                the_completion.extend(['ack_requeue_true', 'ack_requeue_false', 'reject_requeue_true', 'reject_requeue_false'])
+                the_completion.extend(
+                    ['ack_requeue_true', 'ack_requeue_false', 'reject_requeue_true', 'reject_requeue_false'])
             self._print_completion(the_completion)
             return
 

@@ -3,6 +3,7 @@ import json
 import sys
 import time
 
+from omc.common.common_completion import CompletionContent
 from omc.core.decorator import filecache
 from omc_rmq.utils import build_admin_params
 
@@ -12,18 +13,15 @@ from omc.core import Resource, console
 
 
 class Queue(Resource, CompletionMixin):
-    @filecache(duration=60 * 5, file=Resource._get_cache_file_name)
-    def _completion(self, short_mode=True):
+    def _resource_completion(self, short_mode=True):
         results = []
-        results.append(super()._completion(False))
 
-        if not self._have_resource_value():
             # completions for queue name
-            client = self.context['common']['client']
-            queues = json.loads(client.invoke_list('queues'))
-            results = [(one['name'], "auto_delete is %(auto_delete)s | vhost is %(vhost)s" % one) for one in queues]
-            results.extend(self._get_completion(results, short_mode=True))
-        return '\n'.join(results)
+        client = self.context['common']['client']
+        queues = json.loads(client.invoke_list('queues'))
+        results = [(one['name'], "auto_delete is %(auto_delete)s | vhost is %(vhost)s" % one) for one in queues]
+        results.extend(self._get_completion(results, short_mode=True))
+        return CompletionContent(results)
 
     def list(self):
         client = self.context['common']['client']
