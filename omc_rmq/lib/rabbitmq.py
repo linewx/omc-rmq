@@ -17,6 +17,7 @@
 
 from __future__ import print_function
 
+import copy
 from optparse import OptionParser, TitledHelpFormatter
 
 import base64
@@ -345,6 +346,11 @@ parser = OptionParser(usage=short_usage(),
 class Obj(object):
     def __init__(self, d):
         self.__dict__ = d
+
+    def update(self, d):
+        self.__dict__.update(d)
+
+
 
 
 def make_parser():
@@ -722,8 +728,8 @@ class Management:
             "Uploaded definitions from \"%s\" to %s. The import process may take some time. Consult server logs to track progress."
             % (self.options.hostname, path))
 
-    def invoke_list(self, obj_type, args=None):
-        (uri, obj_info, cols) = self.list_show_uri(LISTABLE, 'list', obj_type, args)
+    def invoke_list(self, obj_type, args=None, options={}):
+        (uri, obj_info, cols) = self.list_show_uri(LISTABLE, 'list', obj_type, args, options)
         return self.get(uri)
         #format_list(self.get(uri), cols, obj_info, self.options)
 
@@ -737,7 +743,11 @@ class Management:
         # dashes that HTTP API endpoints use
         return obj_type.replace("_", "-")
 
-    def list_show_uri(self, obj_types, verb, obj_type, args):
+    def list_show_uri(self, obj_types, verb, obj_type, args, user_options={}):
+        options = copy.copy(self.options)
+        if user_options:
+            options.update(user_options)
+
         if args is None:
             args = []
         assert_usage(obj_type in obj_types,
@@ -745,18 +755,18 @@ class Management:
         obj_info = obj_types[obj_type]
         uri = "/%s" % self._list_path_for_obj_type(obj_type)
         query = []
-        if obj_info['vhost'] and self.options.vhost:
-            uri += "/%s" % quote_plus(self.options.vhost)
+        if obj_info['vhost'] and options.vhost:
+            uri += "/%s" % quote_plus(options.vhost)
         cols = args
         if cols == [] and 'cols' in obj_info and self.use_cols():
             cols = obj_info['cols']
         if cols != []:
             pass
             # query.append("columns=" + ",".join(cols))
-        sort = self.options.sort
+        sort = options.sort
         if sort:
             query.append("sort=" + sort)
-        if self.options.sort_reverse:
+        if options.sort_reverse:
             query.append("sort_reverse=true")
         query = "&".join(query)
         if query != "":
